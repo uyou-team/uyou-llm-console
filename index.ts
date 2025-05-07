@@ -159,6 +159,8 @@ async function settings() {
                 console.log(`Auto enter chat on startup is now ${autoInChat}.`)
                 choose()
             })
+        } else if (answer === '/back' || answer === '/choose') {
+            choose()
         }
     })
 }
