@@ -1,7 +1,7 @@
 import readline from 'node:readline'
 import fs from 'node:fs'
 import path from 'node:path';
-import { Ollama } from 'ollama'
+import { Ollama, type Message } from 'ollama'
 
 let ollama: Ollama
 
@@ -102,6 +102,8 @@ function setSystemPrompt() {
     })
 }
 
+const chatList: Message[] = []
+
 async function chat() {
     const config = JSON.parse(await fs.promises.readFile(path.resolve(__dirname, 'config.json'), 'utf-8'))
     const models = await (await ollama.list()).models
@@ -118,17 +120,23 @@ async function chat() {
         }
         if (input.toLowerCase() === '/back' || input.toLowerCase() === '/choose') {
             choose()
+            chatList.length = 0
             return
         }
+
+        chatList.push({ role: 'user', content: input })
         const response = await ollama.chat({
             model: config.model ? config.model : models[0].model,
-            messages: [{role: 'system', content: config.systemPrompt}, { role: 'user', content: input }],
+            messages: [{ role: 'system', content: config.systemPrompt }, ...chatList],
             stream: true
         })
         console.log('Bot:')
+        let botMsg = ''
         for await (const part of response) {
             process.stdout.write(part.message.content)
+            botMsg += part.message.content
         }
+        chatList.push({ role: 'assistant', content: botMsg })
         console.log('\n')
         chat()
     })
