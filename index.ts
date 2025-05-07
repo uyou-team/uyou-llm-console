@@ -11,7 +11,7 @@ const rl = readline.createInterface({
 })
 
 function choose() {
-    rl.question('Choose: \n1: set Model\n2: set Api\n3: set System Promat\n4: To chat\n', (answer) => {
+    rl.question('Choose: \n1: set Model\n2: set Api\n3: set System Promat\n4: To chat\n', async (answer) => {
         if (answer === '1') {
             setModel()
         } else if (answer === '2') {
@@ -19,7 +19,9 @@ function choose() {
         } else if (answer === '3') {
 
         } else {
-            console.log('Start to chat')
+            const config = JSON.parse(await fs.promises.readFile(path.resolve(__dirname, 'config.json'), 'utf-8'))
+            const models = await (await ollama.list()).models
+            console.log(`Start to chat (model: ${config.model ? config.model : models[0].model})`)
             chat()
         }
     })
