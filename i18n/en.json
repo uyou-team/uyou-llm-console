@@ -1,0 +1,19 @@
+{
+    "chooeseQuestion": "Choose: \n1: Set Model\n2: Set Api\n3: Set System Prompt\n4: To chat\n5: Other Settings\n",
+    "startChat": "Start Chat",
+    "model": "model: ",
+    "setApi": "Please enter your API link:\n",
+    "invalidInput": "Invalid input. Please try again.\n",
+    "setApiSuccess": "API link saved successfully.",
+    "chooseModel": "Please choose your model:",
+    "setModelSuccess": "Model saved successfully.",
+    "system": "System: ",
+    "setSystemPrompt": "Please enter your system prompt:\n",
+    "setSystemPromptSuccess": "System prompt saved successfully.",
+    "you": "You: ",
+    "bot": "Bot: ",
+    "on": "ON",
+    "off": "OFF",
+    "otherSettings": "other settings:\n1: set automatically enter chat on startup ",
+    "autoEnterChat": "Auto enter chat on startup is now "
+}

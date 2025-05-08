@@ -1,7 +1,15 @@
 import readline from 'node:readline'
 import fs from 'node:fs'
-import path from 'node:path';
+import path from 'node:path'
 import { Ollama, type Message } from 'ollama'
+import i18n from './i18n'
+
+interface Config {
+    apiLink: string
+    model?: string
+    systemPrompt?: string
+    autoInChat?: 'on' | 'off'
+}
 
 let ollama: Ollama
 
@@ -10,8 +18,8 @@ const rl = readline.createInterface({
     output: process.stdout
 })
 
-function choose() {
-    rl.question('Choose: \n1: set Model\n2: set Api\n3: set System Prompt\n4: To chat\n5: settings\n', async (answer) => {
+async function choose() {
+    rl.question((await i18n()).chooeseQuestion, async (answer) => {
         if (answer === '1') {
             setModel()
         } else if (answer === '2') {
@@ -23,11 +31,11 @@ function choose() {
         } else if (answer === '4') {
             const config = JSON.parse(await fs.promises.readFile(path.resolve(__dirname, 'config.json'), 'utf-8'))
             const models = await (await ollama.list()).models
-            console.log(`\nStart to chat (model: ${config.model ? config.model : models[0].model})`)
+            console.log(`\n${(await i18n()).startChat} (${(await i18n()).model}${config.model ? config.model : models[0].model})`)
             
             if (config.systemPrompt) {
                 const systemPrompt = config.systemPrompt
-                console.log(`\nSystem: ${systemPrompt}`);   
+                console.log(`\n${(await i18n()).system}${systemPrompt}`);   
             }
             chat()
         } else {
@@ -36,23 +44,23 @@ function choose() {
     })
 }
 
-function setApi() {
-    rl.question('Please enter your api link:\n', (answer) => {
+async function setApi() {
+    rl.question((await i18n()).setApi, async (answer) => {
         const apiLink = answer.trim()
         if (!apiLink) {
-            console.log('Invalid input. Please try again.')
+            console.log((await i18n()).invalidInput)
             setApi()
             return
         }
         const config = {
             apiLink: apiLink
         }
-        fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), (err) => {
+        fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), async (err) => {
             if (err) {
                 console.error('Error writing to file:', err)
                 return
             }
-            console.log('API link saved successfully.')
+            console.log((await i18n()).setApiSuccess)
             init()
             choose()
         })
@@ -62,8 +70,8 @@ function setApi() {
 async function setModel() {
     const modelList = await (await ollama.list()).models
     const question = modelList.map((model, index) => `${index + 1}: ${model.model}`).join('\n')
-    rl.question(`Please choose your model:\n${question}\n`, (answer) => {
-        fs.readFile(path.resolve(__dirname, 'config.json'), 'utf-8', (err, data) => {
+    rl.question(`${(await i18n()).chooseModel}\n${question}\n`, (answer) => {
+        fs.readFile(path.resolve(__dirname, 'config.json'), 'utf-8', async (err, data) => {
             if (err) {
                 console.error('Error reading file:', err)
                 return
@@ -71,25 +79,25 @@ async function setModel() {
             const config = JSON.parse(data)
             const modelIndex = parseInt(answer.trim()) - 1
             if (modelIndex < 0 || modelIndex >= modelList.length) {
-                console.log('Invalid input. Please try again.')
+                console.log((await i18n()).invalidInput)
                 setModel()
                 return
             }
             config.model = modelList[modelIndex].model
-            fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), (err) => {
+            fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), async (err) => {
                 if (err) {
                     console.error('Error writing to file:', err)
                     return
                 }
-                console.log('Model saved successfully.')
+                console.log((await i18n()).setModelSuccess)
                 choose()
             })
         })
     })
 }
 
-function setSystemPrompt() {
-    rl.question('Please enter your system prompt:\n', (answer) => {
+async function setSystemPrompt() {
+    rl.question((await i18n()).setSystemPrompt, (answer) => {
         fs.readFile(path.resolve(__dirname, 'config.json'), 'utf-8', (err, data) => {
             if (err) {
                 console.error('Error reading file:', err)
@@ -97,12 +105,12 @@ function setSystemPrompt() {
             }
             const config = JSON.parse(data)
             config.systemPrompt = answer.trim()
-            fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), (err) => {
+            fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), async (err) => {
                 if (err) {
                     console.error('Error writing to file:', err)
                     return
                 }
-                console.log('System prompt saved successfully.')
+                console.log((await i18n()).setSystemPromptSuccess)
                 choose()
             })
         })
@@ -115,7 +123,7 @@ async function chat() {
     const config = JSON.parse(await fs.promises.readFile(path.resolve(__dirname, 'config.json'), 'utf-8'))
     const models = await (await ollama.list()).models
 
-    rl.question('You: ', async (input) => {
+    rl.question((await i18n()).you, async (input) => {
         if (input.toLowerCase() === '/exit') {
             rl.close()
             return
@@ -132,7 +140,7 @@ async function chat() {
             messages: [{ role: 'system', content: config.systemPrompt }, ...chatList],
             stream: true
         })
-        console.log('Bot:')
+        console.log((await i18n()).bot)
         let botMsg = ''
         for await (const part of response) {
             process.stdout.write(part.message.content)
@@ -145,18 +153,18 @@ async function chat() {
 }
 
 async function settings() {
-    const config = JSON.parse(await fs.promises.readFile(path.resolve(__dirname, 'config.json'), 'utf-8'))
+    const config: Config = JSON.parse(await fs.promises.readFile(path.resolve(__dirname, 'config.json'), 'utf-8'))
 
-    rl.question(`uyou llm console settings:\n1: set automatically enter chat on startup (${config.autoInChat ? config.autoInChat : 'off'})\n`, (answer) => {
+    rl.question(`${(await i18n()).otherSettings}(${config.autoInChat ? (await i18n())[config.autoInChat] : (await i18n()).off})\n`, async (answer) => {
         if (answer === '1') {
             const autoInChat = config.autoInChat === 'on' ? 'off' : 'on'
             config.autoInChat = autoInChat
-            fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), (err) => {
+            fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), async (err) => {
                 if (err) {
                     console.error('Error writing to file:', err)
                     return
                 }
-                console.log(`Auto enter chat on startup is now ${autoInChat}.`)
+                console.log(`${(await i18n()).autoEnterChat}${(await i18n())[autoInChat]}`)
                 choose()
             })
         } else if (answer === '/back' || answer === '/choose') {
@@ -177,11 +185,11 @@ function init() {
         if (JSON.parse(config).autoInChat === 'on') {
             const config = JSON.parse(await fs.promises.readFile(path.resolve(__dirname, 'config.json'), 'utf-8'))
             const models = await (await ollama.list()).models
-            console.log(`Start to chat (model: ${config.model ? config.model : models[0].model})`)
+            console.log(`${(await i18n()).startChat} (${(await i18n()).model}${config.model ? config.model : models[0].model})`)
             
             if (config.systemPrompt) {
                 const systemPrompt = config.systemPrompt
-                console.log(`\nSystem: ${systemPrompt}`);   
+                console.log(`\n${(await i18n()).system}${systemPrompt}`);   
             }
             chat()
             return

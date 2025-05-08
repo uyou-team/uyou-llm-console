@@ -1,0 +1,19 @@
+{
+    "chooeseQuestion": "选择：\n1: 设置模型\n2: 设置 API\n3: 设置系统提示词\n4: 启动聊天\n5: 其他设置\n",
+    "startChat": "启动聊天",
+    "model": "模型：",
+    "setApi": "请输入你的 API 链接：\n",
+    "invalidInput": "无效输入。请重试。\n",
+    "setApiSuccess": "API 链接保存成功。",
+    "chooseModel": "请选择你的模型：",
+    "setModelSuccess": "模型保存成功。",
+    "system": "系统：",
+    "setSystemPrompt": "请输入你的系统提示词：\n",
+    "setSystemPromptSuccess": "系统提示词保存成功。",
+    "you": "你：",
+    "bot": "模型：",
+    "on": "开启",
+    "off": "关闭",
+    "otherSettings": "其他设置：\n1: 设置启动时自动进入聊天 ",
+    "autoEnterChat": "启动时自动进入聊天现在"
+}
