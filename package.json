@@ -2,6 +2,11 @@
   "name": "uyou-llm-console",
   "module": "index.ts",
   "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "bun run .",
+    "build": "bun build index.ts --compile --outfile dist/uyou-llm-console"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
