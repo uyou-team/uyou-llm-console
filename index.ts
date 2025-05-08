@@ -1,8 +1,9 @@
-import { file, write, main, resolveSync, resolve } from 'bun'
+import { file, write } from 'bun'
 import readline from 'node:readline'
 import { Ollama, type Message } from 'ollama'
 import packageJSON from './package.json'
 import i18n from './i18n'
+import logo from './logo.txt'
 
 export interface Config {
     apiLink: string
@@ -29,7 +30,7 @@ function choose() {
         } else if (answer === '/exit'.toLowerCase()) {
             rl.close()
         } else if (answer === '4') {
-            const config = await file(resolveSync('./config.json', main)).json()
+            const config = await file('./config.json').json()
             const models = await (await ollama.list()).models
             console.log(`\n${i18n().startChat} (${i18n().model}${config.model ? config.model : models[0].model})`)
             
@@ -55,7 +56,7 @@ function setApi() {
         const config = {
             apiLink: apiLink
         }
-        write(resolveSync('./config.json', main), JSON.stringify(config))
+        write('./config.json', JSON.stringify(config))
             .then(() => {
                 console.log(i18n().setApiSuccess)
                 init()
@@ -69,7 +70,7 @@ async function setModel() {
     const modelList = await (await ollama.list()).models
     const question = modelList.map((model, index) => `${index + 1}: ${model.model}`).join('\n')
     rl.question(`${i18n().chooseModel}\n${question}\n`, (answer) => {
-        file(resolveSync('./config.json', main))
+        file('./config.json')
             .json()
             .then((config) => {
                 const modelIndex = parseInt(answer.trim()) - 1
@@ -79,7 +80,7 @@ async function setModel() {
                     return
                 }
                 config.model = modelList[modelIndex].model
-                write(resolveSync('./config.json', main), JSON.stringify(config))
+                write('./config.json', JSON.stringify(config))
                     .then(() => {
                         console.log(i18n().setModelSuccess)
                         choose()
@@ -92,11 +93,11 @@ async function setModel() {
 
 function setSystemPrompt() {
     rl.question(i18n().setSystemPrompt, (answer) => {
-        file(resolveSync('./config.json', main))
+        file('./config.json')
             .json()
             .then((config) => {
                 config.systemPrompt = answer.trim()
-                write(resolveSync('./config.json', main), JSON.stringify(config))
+                write('./config.json', JSON.stringify(config))
                     .then(() => {
                         console.log(i18n().setSystemPromptSuccess)
                         choose()
@@ -110,7 +111,7 @@ function setSystemPrompt() {
 const chatList: Message[] = []
 
 async function chat() {
-    const config = await file(resolveSync('./config.json', main)).json()
+    const config = await file('./config.json').json()
     const models = await (await ollama.list()).models
 
     rl.question(i18n().you, async (input) => {
@@ -143,13 +144,13 @@ async function chat() {
 }
 
 async function settings() {
-    const config: Config = await file(resolveSync('./config.json', main)).json()
+    const config: Config = await file('./config.json').json()
 
     rl.question(`${i18n().otherSettings}(${config.autoInChat ? i18n()[config.autoInChat] : i18n().off})\n`, (answer) => {
         if (answer === '1') {
             const autoInChat = config.autoInChat === 'on' ? 'off' : 'on'
             config.autoInChat = autoInChat
-            write(resolveSync('./config.json', main), JSON.stringify(config))
+            write('./config.json', JSON.stringify(config))
                 .then(() => {
                     console.log(`${i18n().autoEnterChat}${i18n()[autoInChat]}`)
                     choose()
@@ -161,36 +162,31 @@ async function settings() {
     })
 }
 
-async function init() {
-    // console.log(await file(resolveSync('./logo', main)).text())
+function init() {
+    console.log(logo)
     console.log('\n')
     console.log(`uyou llm console v${packageJSON.version} -- by Anthony Lu\n`);
 
-    resolve('./config.json', main)
-        .then((path) => {
-            file(path)
-                .json()
-                .then(async (config) => {
-                    ollama = new Ollama({ host: config.apiLink })
+    file('./config.json')
+        .json()
+        .then(async (config) => {
+            ollama = new Ollama({ host: config.apiLink })
 
-                    if (config.autoInChat === 'on') {
-                        const models = await (await ollama.list()).models
-                        console.log(`${i18n().startChat} (${i18n().model}${config.model ? config.model : models[0].model})`)
-                        
-                        if (config.systemPrompt) {
-                            const systemPrompt = config.systemPrompt
-                            console.log(`\n${i18n().system}${systemPrompt}`);   
-                        }
-                        chat()
-                        return
-                    }
+            if (config.autoInChat === 'on') {
+                const models = await (await ollama.list()).models
+                console.log(`${i18n().startChat} (${i18n().model}${config.model ? config.model : models[0].model})`)
+                
+                if (config.systemPrompt) {
+                    const systemPrompt = config.systemPrompt
+                    console.log(`\n${i18n().system}${systemPrompt}`);   
+                }
+                chat()
+                return
+            }
 
-                    choose()
-                })
-                .catch((err) => console.log(err))
+            choose()
         })
         .catch((_err) => {
-            write('config.json', '')
             setApi()
         })
 }
