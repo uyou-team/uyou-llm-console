@@ -1,9 +1,9 @@
-import { osLocale } from 'os-locale'
+import { osLocaleSync } from 'os-locale'
 import en from './en.json'
 import zhHans from './zh-hans.json'
 
-export default async function () {
-    if (await osLocale() === 'zh-CN') {
+export default function () {
+    if (osLocaleSync().toLowerCase() === 'zh-cn') {
         return zhHans
     } else {
         return en
