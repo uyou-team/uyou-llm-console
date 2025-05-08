@@ -1,5 +1,5 @@
 {
-    "chooeseQuestion": "Choose: \n1: Set Model\n2: Set Api\n3: Set System Prompt\n4: To chat\n5: Other Settings\n",
+    "chooeseQuestion": "Choose Menu: \n1: Set Model\n2: Set Api\n3: Set System Prompt\n4: To chat\n5: Other Settings\n",
     "startChat": "Start Chat",
     "model": "model: ",
     "setApi": "Please enter your API link:\n",

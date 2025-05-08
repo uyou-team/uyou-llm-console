@@ -1,5 +1,5 @@
 {
-    "chooeseQuestion": "选择：\n1: 设置模型\n2: 设置 API\n3: 设置系统提示词\n4: 启动聊天\n5: 其他设置\n",
+    "chooeseQuestion": "选择菜单：\n1: 设置模型\n2: 设置 API\n3: 设置系统提示词\n4: 启动聊天\n5: 其他设置\n",
     "startChat": "启动聊天",
     "model": "模型：",
     "setApi": "请输入你的 API 链接：\n",
