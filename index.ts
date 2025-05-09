@@ -1,4 +1,4 @@
-import { file, write } from 'bun'
+import { file, write, $ } from 'bun'
 import readline from 'node:readline'
 import { Ollama, type Message } from 'ollama'
 import packageJSON from './package.json'
@@ -22,17 +22,21 @@ const rl = readline.createInterface({
 function choose() {
     rl.question(i18n().chooeseQuestion, async (answer) => {
         if (answer === '1') {
+            await $`clear`
             setModel()
         } else if (answer === '2') {
+            await $`clear`
             setApi()
         } else if (answer === '3') {
+            await $`clear`
             setSystemPrompt()
         } else if (answer === '/exit'.toLowerCase()) {
             rl.close()
         } else if (answer === '4') {
+            await $`clear`
             const config = await file('./config.json').json()
             const models = await (await ollama.list()).models
-            console.log(`\n${i18n().startChat} (${i18n().model}${config.model ? config.model : models[0].model})`)
+            console.log(`${i18n().startChat} (${i18n().model}${config.model ? config.model : models[0].model})`)
             
             if (config.systemPrompt) {
                 const systemPrompt = config.systemPrompt
@@ -40,6 +44,7 @@ function choose() {
             }
             chat()
         } else {
+            await $`clear`
             settings()
         }
     })
@@ -57,9 +62,10 @@ function setApi() {
             apiLink: apiLink
         }
         write('./config.json', JSON.stringify(config))
-            .then(() => {
-                console.log(i18n().setApiSuccess)
+            .then(async () => {
                 init()
+                await $`clear`
+                console.log(i18n().setApiSuccess)
                 choose()
             })
             .catch((err) => console.error('Error writing to file:', err))
@@ -81,7 +87,8 @@ async function setModel() {
                 }
                 config.model = modelList[modelIndex].model
                 write('./config.json', JSON.stringify(config))
-                    .then(() => {
+                    .then(async () => {
+                        await $`clear`
                         console.log(i18n().setModelSuccess)
                         choose()
                     })
@@ -98,7 +105,8 @@ function setSystemPrompt() {
             .then((config) => {
                 config.systemPrompt = answer.trim()
                 write('./config.json', JSON.stringify(config))
-                    .then(() => {
+                    .then(async () => {
+                        await $`clear`
                         console.log(i18n().setSystemPromptSuccess)
                         choose()
                     })
@@ -120,6 +128,7 @@ async function chat() {
             return
         }
         if (input.toLowerCase() === '/back' || input.toLowerCase() === '/choose') {
+            await $`clear`
             choose()
             chatList.length = 0
             return
@@ -146,17 +155,19 @@ async function chat() {
 async function settings() {
     const config: Config = await file('./config.json').json()
 
-    rl.question(`${i18n().otherSettings}(${config.autoInChat ? i18n()[config.autoInChat] : i18n().off})\n`, (answer) => {
+    rl.question(`${i18n().otherSettings}(${config.autoInChat ? i18n()[config.autoInChat] : i18n().off})\n`, async (answer) => {
         if (answer === '1') {
             const autoInChat = config.autoInChat === 'on' ? 'off' : 'on'
             config.autoInChat = autoInChat
             write('./config.json', JSON.stringify(config))
-                .then(() => {
+                .then(async () => {
+                    await $`clear`
                     console.log(`${i18n().autoEnterChat}${i18n()[autoInChat]}`)
                     choose()
                 })
                 .catch((err) => console.error('Error writing to file:', err))
         } else if (answer === '/back' || answer === '/choose') {
+            await $`clear`
             choose()
         }
     })
